@@ -3,6 +3,7 @@ package com.company;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,14 +19,14 @@ public class Block {
     private int prefix;
     private String prefixString;
 
-    public Block(String data, String previousHash, long timeStamp, String prefixString, int prefix) {
+    private Block previous;
+
+    ArrayList<Block> next = new ArrayList<>();
+
+    public Block(String data, String prefixString, int prefix) {
         this.data = data;
-        this.previousHash = previousHash;
-        this.timeStamp = timeStamp;
         this.prefixString = prefixString;
         this.prefix = prefix;
-        this.hash = mineBlock();
-
     }
 
     public String mineBlock() {
@@ -54,12 +55,7 @@ public class Block {
         return buffer.toString();
     }
 
-    public boolean valid(String previous){
-        return hash.equals(calculateBlockHash())
-                    && previousHash.equals(previous)
-                    && hash.substring(0, prefix).equals(prefixString);
-    }
-
+    @Override
     public String toString() {
         return "Block{" +
                 "hash='" + hash + '\'' +
@@ -73,14 +69,42 @@ public class Block {
     }
 
     public String getHash() {
-        return this.hash;
+        return hash;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
     }
 
     public String getPreviousHash() {
-        return this.previousHash;
+        return previousHash;
     }
 
-    public void setData(String data) {
-        this.data = data;
+    public void setPreviousHash(String previousHash) {
+        this.previousHash = previousHash;
+    }
+
+    public long getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
+    public Block getPrevious() {
+        return previous;
+    }
+
+    public void setPrevious(Block previous) {
+        this.previous = previous;
+    }
+
+    public ArrayList<Block> getNext() {
+        return next;
+    }
+
+    public void setNext(Block next) {
+        this.next.add(next);
     }
 }

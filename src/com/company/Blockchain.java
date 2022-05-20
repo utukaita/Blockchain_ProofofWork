@@ -1,42 +1,57 @@
 package com.company;
 
-import java.util.ArrayList;
+
 import java.util.Date;
 
 public class Blockchain{
-    int prefix;
-    String prefixString;
-    ArrayList<Block> blockchain = new ArrayList<>();
+    private int prefix;
+    private String prefixString;
+
+    private Block root;
+
     public Blockchain(int prefix) {
         this.prefix = prefix;
         prefixString = new String(new char[prefix]).replace('\0', '0');
     }
 
-    public void add(Block block){
+    public void add(Block block, Block previous){
         String previousHash = "0";
-        if (getLength() > 0) {
-            previousHash = blockchain.get(getLength() - 1).getHash();
+        if (previous != null) {
+            previousHash = previous.getHash();
+            previous.setNext(block);
         }
-        if(block.valid(previousHash)) {
-            blockchain.add(block);
-        }
+        else
+            root = block;
+        block.setPreviousHash(previousHash);
+        block.setTimeStamp(new Date().getTime());
+        block.setHash(block.mineBlock());
+        block.setPrevious(previous);
     }
 
     public Block create(String data) {
-        String previousHash = "0";
-        if (getLength() > 0) {
-            previousHash = blockchain.get(getLength() - 1).getHash();
-        }
-        Block block = new Block(data, previousHash, new Date().getTime(), prefixString, prefix);
+        Block block = new Block(data, prefixString, prefix);
         return block;
     }
 
-    public Block getBlock(int n) {
-        return blockchain.get(n);
+    public void traverse(Block block){
+        System.out.println(block);
+        if(block.getNext()!=null){
+            for (int i = 0; i < block.getNext().size() ; i++)
+                traverse(block.getNext().get(i));
+        }
     }
 
-    public int getLength() {
-        return blockchain.size();
+    public Block getRoot() {
+        return root;
+    }
+
+    public int getLength(Block block) {
+        int counter = 1;
+        while (block.getPrevious()!=null){
+               counter++;
+               block = block.getPrevious();
+        }
+        return counter;
     }
 
     public int getPrefix() {
