@@ -2,22 +2,31 @@ package com.company;
 
 public class Main {
 
-    public static void main(String[] args) throws InterruptedException {
-        Blockchain chain = new Blockchain(3);
-        Block[] blocks = new Block[3];
-        for (int i = 0; i < blocks.length; i++) {
-            Block block = chain.create("Utu Kaita (hriru3hu8t2r2thu) transfers 1,000,000 utu to Elon Musk (fjhiu1y3t37h34q909).");
-            blocks[i] = block;
-        }
-        int n=0;
-        while(n<blocks.length) {
-            for (int i = 0; i < 1; i++) {
-                Miner miner = new Miner(blocks, chain, i, 7);
-                miner.start();
-                miner.join();
-                n++;
-            }
+    public static void main(String[] args) {
+        final int prefix = 5;
+        final int block_count = 100;
+        final int miner_count = 12;
+        final int privateMiner_count = 8;
+        final int malevolentRatio = 0;
+        final int privateMalevolentRatio = 0;
+        final String name = "public";
+        final String privateName = "private";
+        Blockchain chain = new Blockchain(block_count, miner_count, malevolentRatio, prefix, name);
+        Blockchain privateChain = new Blockchain(block_count, privateMiner_count, privateMalevolentRatio, prefix, privateName);
+        chain.start();
+        privateChain.start();
+        try {
+            chain.join();
+            privateChain.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
         chain.traverse(chain.getRoot());
+        System.out.println(chain);
+        privateChain.traverse(privateChain.getRoot());
+        System.out.println(privateChain);
+
+
+
     }
 }

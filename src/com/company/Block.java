@@ -1,56 +1,67 @@
 package com.company;
 
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Block {
-
-    private static Logger logger = Logger.getLogger(Block.class.getName());
 
     private String hash;
     private String previousHash;
     private String data;
     private long timeStamp;
+    private int miner;
     private int nonce;
     private int prefix;
     private String prefixString;
 
     private Block previous;
+    private Block next;
 
-    ArrayList<Block> next = new ArrayList<>();
-
-    public Block(String data, String prefixString, int prefix) {
-        this.data = data;
-        this.prefixString = prefixString;
+    public Block(int prefix) {
         this.prefix = prefix;
+        prefixString = new String(new char[prefix]).replace('\0', '0');
     }
 
-    public String mineBlock() {
-        hash = calculateBlockHash();
-        while (!hash.substring(0, prefix).equals(prefixString)) {
-            nonce++;
-            hash = calculateBlockHash();
+    public boolean mined(){
+        String prevHash = "0", hashLocal = "0";
+        long prevTimeStamp = 0;
+        if (previous!=null) {
+            prevHash = previous.hash;
+            prevTimeStamp = previous.timeStamp;
         }
-        return hash;
+        if(hash!=null) hashLocal = hash;
+        if ( hashLocal.substring(0, prefix).equals(prefixString)
+                && prevHash == previousHash
+                && hashLocal.equals(calculateBlockHash())
+                && timeStamp>prevTimeStamp
+                && dataValid())
+        {
+            return true;
+        }
+        else
+            return false;
+    }
+    public boolean dataValid(){
+        // Could be made more advanced but testing double spending is not the topic of the study
+        // Currently a mere abstraction for distinguishing between benevolent and malevolent miners
+        if(data.equals("Valid data"))
+            return true;
+        else
+            return false;
     }
 
     public String calculateBlockHash() {
         String dataToHash = previousHash + Long.toString(timeStamp) + Integer.toString(nonce) + data;
-        MessageDigest digest = null;
+        MessageDigest digest;
         byte[] bytes = null;
         try {
             digest = MessageDigest.getInstance("SHA-256");
             bytes = digest.digest(dataToHash.getBytes("UTF-8"));
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            logger.log(Level.SEVERE, ex.getMessage());
+        } catch (Exception e) {
+            System.out.println("Got exception " + e);
         }
         StringBuffer buffer = new StringBuffer();
-        for (byte b : bytes) {
-            buffer.append(String.format("%02x", b));
+        for (int i = 0; i < bytes.length; i++) {
+            buffer.append(String.format("%02x", bytes[i]));
         }
         return buffer.toString();
     }
@@ -61,10 +72,9 @@ public class Block {
                 "hash='" + hash + '\'' +
                 ", previousHash='" + previousHash + '\'' +
                 ", data='" + data + '\'' +
-                ", timeStamp=" + timeStamp +
-                ", nonce=" + nonce +
-                ", prefix=" + prefix +
-                ", prefixString='" + prefixString + '\'' +
+                ", timeStamp=" + timeStamp + '\'' +
+                ", miner=" + miner + '\'' +
+                ", nonce=" + nonce + '\'' +
                 '}';
     }
 
@@ -100,11 +110,39 @@ public class Block {
         this.previous = previous;
     }
 
-    public ArrayList<Block> getNext() {
+    public Block getNext() {
         return next;
     }
 
     public void setNext(Block next) {
-        this.next.add(next);
+        this.next = next;
+    }
+
+    public String getData(){
+        return data;
+    }
+
+    public void setData(String data){
+        this.data=data;
+    }
+
+    public void setNonce(int nonce) {
+        this.nonce = nonce;
+    }
+
+    public int getMiner() {
+        return miner;
+    }
+
+    public void setMiner(int miner) {
+        this.miner = miner;
+    }
+
+    public int getPrefix() {
+        return prefix;
+    }
+
+    public String getPrefixString() {
+        return prefixString;
     }
 }
